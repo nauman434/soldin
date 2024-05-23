@@ -26,6 +26,10 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ nextStep, handleChange, formData 
 
   return (
     <form onSubmit={continueStep} className="space-y-8">
+      <div className="mb-3">
+        <h2 className="text-xl font-semibold">Basic Information</h2>
+        <p className="text-sm text-gray-600">Please provide information about your deal below and verify its accuracy.</p>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <Label className="font-semibold text-[#010101]">First name</Label>

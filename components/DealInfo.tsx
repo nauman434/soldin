@@ -68,6 +68,10 @@ const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, f
 
   return (
     <form onSubmit={continueStep} className="space-y-8">
+      <div className="mb-3">
+        <h2 className="text-xl font-semibold">Deal Information</h2>
+        <p className="text-sm text-gray-600">Please provide information about your deal below and verify its accuracy.</p>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <Label htmlFor="assetType" className="font-semibold text-[#010101]">Asset Type *</Label>

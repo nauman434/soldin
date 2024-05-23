@@ -77,7 +77,8 @@ const LenderInfo: React.FC<LenderInfoProps> = ({ nextStep, prevStep, handleChang
   return (
     <form onSubmit={continueStep} className="space-y-8">
       <div className="mb-3">
-        <h2 className="text-xl font-semibold">Lender Information</h2>
+        <h2 className="text-xl font-semibold">Parties Information</h2>
+        <p className="text-sm text-gray-600">Please provide information about your deal below and verify its accuracy.</p>
       </div>
 
       {brokers.map((broker, index) => (

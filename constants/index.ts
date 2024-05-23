@@ -40,7 +40,7 @@ export const formParts = [
     },
     {
         id: 3,
-        name: 'Lender Info',
+        name: 'Parties Info',
     },
     {
         id: 4,

@@ -8,7 +8,7 @@ const page = () => {
     <section className='grid md:grid-cols-12 grid-cols-1 h-[100vh]'>
       <div className='col-span-6'>
         <Navbar />
-        <div className='mt-[50px] px-[55px] mb-[50px]'>
+        <div className='mt-[50px] lg:px-[55px] px-[24px] mb-[50px]'>
           <Form />
         </div>
       </div>

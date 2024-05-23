@@ -74,7 +74,7 @@ const Form: React.FC = () => {
   const formParts = [
     { id: 1, name: 'Basic info' },
     { id: 2, name: 'Deal Info' },
-    { id: 3, name: 'Lender Info' },
+    { id: 3, name: 'Parties Info' },
     { id: 4, name: 'Select Promo' }
   ];
 
@@ -140,11 +140,11 @@ const Form: React.FC = () => {
 
   return (
     <div className="relative space-y-8">
-      <div className="flex justify-between gap-4">
+      <div className="flex justify-between lg:gap-4 gap-2">
         {formParts.map(part => (
           <div
             key={part.id}
-            className={`w-[149px] border-b-4 ${part.id === step ? 'border-b-black font-semibold' : 'text-gray-400'} pb-2`}
+            className={`lg:text-[16px] text-[12px] w-[149px] border-b-4 ${part.id === step ? 'border-b-black font-semibold' : 'text-gray-400'} pb-2`}
           >
             {part.name}
           </div>
