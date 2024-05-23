@@ -82,10 +82,7 @@ const SelectPromo: React.FC<SelectPromoProps> = ({ prevStep, handleChange, formD
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Button type="button" onClick={prevStep} variant="outline">Back</Button>
-        <Button type="submit">Checkout</Button>
-      </div>
+      
     </form>
   );
 };

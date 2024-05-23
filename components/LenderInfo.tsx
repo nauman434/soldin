@@ -1,16 +1,74 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Trash } from 'lucide-react';
+
+interface Broker {
+  brokerInfo: string;
+  agencyName: string;
+  partyRepresented: string;
+  brokerPhoto: string;
+}
+
+interface AdditionalParty {
+  type: string;
+  info: string;
+  instagramHandle: string;
+  photo: string;
+  publish: boolean;
+}
 
 interface LenderInfoProps {
   nextStep: () => void;
   prevStep: () => void;
   handleChange: (input: string, value: string | boolean) => void;
+  handleBrokersChange: (brokers: Broker[]) => void;
+  handleAdditionalPartiesChange: (additionalParties: AdditionalParty[]) => void;
   formData: any;
 }
 
-const LenderInfo: React.FC<LenderInfoProps> = ({ nextStep, prevStep, handleChange, formData }) => {
+const LenderInfo: React.FC<LenderInfoProps> = ({ nextStep, prevStep, handleChange, handleBrokersChange, handleAdditionalPartiesChange, formData }) => {
+  const [brokers, setBrokers] = useState<Broker[]>(formData.brokers);
+  const [additionalParties, setAdditionalParties] = useState<AdditionalParty[]>(formData.additionalParties);
+
+  const addBroker = () => {
+    const newBrokers = [...brokers, { brokerInfo: '', agencyName: '', partyRepresented: '', brokerPhoto: '' }];
+    setBrokers(newBrokers);
+    handleBrokersChange(newBrokers);
+  };
+
+  const removeBroker = (index: number) => {
+    const newBrokers = brokers.filter((_, i) => i !== index);
+    setBrokers(newBrokers);
+    handleBrokersChange(newBrokers);
+  };
+
+  const handleBrokerChange = (index: number, field: string, value: string) => {
+    const updatedBrokers = brokers.map((broker, i) => (i === index ? { ...broker, [field]: value } : broker));
+    setBrokers(updatedBrokers);
+    handleBrokersChange(updatedBrokers);
+  };
+
+  const addAdditionalParty = () => {
+    const newParties = [...additionalParties, { type: '', info: '', instagramHandle: '', photo: '', publish: false }];
+    setAdditionalParties(newParties);
+    handleAdditionalPartiesChange(newParties);
+  };
+
+  const removeAdditionalParty = (index: number) => {
+    const newParties = additionalParties.filter((_, i) => i !== index);
+    setAdditionalParties(newParties);
+    handleAdditionalPartiesChange(newParties);
+  };
+
+  const handleAdditionalPartyChange = (index: number, field: string, value: string | boolean) => {
+    const updatedParties = additionalParties.map((party, i) => (i === index ? { ...party, [field]: value } : party));
+    setAdditionalParties(updatedParties);
+    handleAdditionalPartiesChange(updatedParties);
+  };
+
   const continueStep = (e: React.FormEvent) => {
     e.preventDefault();
     nextStep();
@@ -22,175 +80,165 @@ const LenderInfo: React.FC<LenderInfoProps> = ({ nextStep, prevStep, handleChang
         <h2 className="text-xl font-semibold">Lender Information</h2>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label htmlFor="brokerInfo" className="font-semibold text-[#010101]">Broker Information *</Label>
-          <Input
-            id="brokerInfo"
-            type="text"
-            placeholder="Agent Name"
-            value={formData.brokerInfo}
-            onChange={(e) => handleChange('brokerInfo', e.target.value)}
-            className="mt-1 block w-full"
-            disabled={formData.noBroker}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="agencyName" className="font-semibold text-[#010101]">Agency Name *</Label>
-          <Input
-            id="agencyName"
-            type="text"
-            placeholder="Agency"
-            value={formData.agencyName}
-            onChange={(e) => handleChange('agencyName', e.target.value)}
-            className="mt-1 block w-full"
-            disabled={formData.noBroker}
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center mt-2">
-        <input
-          id="noBroker"
-          type="checkbox"
-          className="mr-2"
-          checked={formData.noBroker}
-          onChange={(e) => handleChange('noBroker', (e.target as HTMLInputElement).checked)}
-        />
-        <Label htmlFor="noBroker" className="font-semibold text-[#010101]">No brokers were involved</Label>
-      </div>
-
-      <div>
-        <Label htmlFor="brokerPhoto" className="font-semibold text-[#010101]">Upload Broker Photo</Label>
-        <div className='p-5 shadow-custom rounded-md mt-2'>
-          <div className="mt-1 flex items-center justify-center w-full h-[50px] border-2 border-dashed rounded-lg cursor-pointer">
-            <input
-              id="brokerPhoto"
-              type="file"
-              onChange={(e) => handleChange('brokerPhoto', e.target.files?.[0]?.name || '')}
-              className="hidden"
-              disabled={formData.noBroker}
-            />
-            <Label htmlFor="brokerPhoto" className="text-center text-gray-600 cursor-pointer">
-              Upload Broker Photo
-            </Label>
+      {brokers.map((broker, index) => (
+        <div key={index} className="space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor={`brokerInfo-${index}`} className="font-semibold text-[#010101]">Broker Information *</Label>
+              <Input
+                id={`brokerInfo-${index}`}
+                type="text"
+                placeholder="Agent Name"
+                value={broker.brokerInfo}
+                onChange={(e) => handleBrokerChange(index, 'brokerInfo', e.target.value)}
+                className="mt-1 block w-full"
+              />
+            </div>
+            <div>
+              <Label htmlFor={`agencyName-${index}`} className="font-semibold text-[#010101]">Agency Name *</Label>
+              <Input
+                id={`agencyName-${index}`}
+                type="text"
+                placeholder="Agency"
+                value={broker.agencyName}
+                onChange={(e) => handleBrokerChange(index, 'agencyName', e.target.value)}
+                className="mt-1 block w-full"
+              />
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label htmlFor="lenderInfo" className="font-semibold text-[#010101]">Lender Information *</Label>
-          <Input
-            id="lenderInfo"
-            type="text"
-            placeholder="Ex. Chase Bank"
-            value={formData.lenderInfo}
-            onChange={(e) => handleChange('lenderInfo', e.target.value)}
-            className="mt-1 block w-full"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="instagramHandle" className="font-semibold text-[#010101]">Instagram Handle *</Label>
-          <Input
-            id="instagramHandle"
-            type="text"
-            placeholder="Ex. @solidinmiami"
-            value={formData.instagramHandle}
-            onChange={(e) => handleChange('instagramHandle', e.target.value)}
-            className="mt-1 block w-full"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center mt-2">
-        <input
-          id="hideLenderInfo"
-          type="checkbox"
-          className="mr-2"
-          checked={formData.hideLenderInfo}
-          onChange={(e) => handleChange('hideLenderInfo', (e.target as HTMLInputElement).checked)}
-        />
-        <Label htmlFor="hideLenderInfo" className="font-semibold text-[#010101]">Hide Lender Information/All Cash Deal</Label>
-      </div>
-
-      <div>
-        <Label htmlFor="lenderPhoto" className="font-semibold text-[#010101]">Upload Lender(s) Photo</Label>
-        <div className='p-5 shadow-custom rounded-md mt-2'>
-          <div className="mt-1 flex items-center justify-center w-full h-[50px] border-2 border-dashed rounded-lg cursor-pointer">
-            <input
-              id="lenderPhoto"
-              type="file"
-              onChange={(e) => handleChange('lenderPhoto', e.target.files?.[0]?.name || '')}
-              className="hidden"
-            />
-            <Label htmlFor="lenderPhoto" className="text-center text-gray-600 cursor-pointer">
-              Upload Lender(s) Photo
-            </Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor={`partyRepresented-${index}`} className="font-semibold text-[#010101]">Party Represented *</Label>
+              <Select onValueChange={(value) => handleBrokerChange(index, 'partyRepresented', value)} defaultValue={broker.partyRepresented}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Party" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Buyer">Buyer</SelectItem>
+                  <SelectItem value="Seller">Seller</SelectItem>
+                  <SelectItem value="Landlord">Landlord</SelectItem>
+                  <SelectItem value="Tenant">Tenant</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label htmlFor="landlordInfo" className="font-semibold text-[#010101]">Landlord Information *</Label>
-          <Input
-            id="landlordInfo"
-            type="text"
-            placeholder="Ex. Jane Doe"
-            value={formData.landlordInfo}
-            onChange={(e) => handleChange('landlordInfo', e.target.value)}
-            className="mt-1 block w-full"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="landlordInstagramHandle" className="font-semibold text-[#010101]">Instagram Handle *</Label>
-          <Input
-            id="landlordInstagramHandle"
-            type="text"
-            placeholder="Ex. @solidinmiami"
-            value={formData.landlordInstagramHandle}
-            onChange={(e) => handleChange('landlordInstagramHandle', e.target.value)}
-            className="mt-1 block w-full"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center mt-2">
-        <input
-          id="hideLandlordInfo"
-          type="checkbox"
-          className="mr-2"
-          checked={formData.hideLandlordInfo}
-          onChange={(e) => handleChange('hideLandlordInfo', (e.target as HTMLInputElement).checked)}
-        />
-        <Label htmlFor="hideLandlordInfo" className="font-semibold text-[#010101]">Hide Landlord Information</Label>
-      </div>
-
-      <div>
-        <Label htmlFor="landlordPhoto" className="font-semibold text-[#010101]">Upload Landlord(s) Photo</Label>
-        <div className='p-5 shadow-custom rounded-md mt-2'>
-          <div className="mt-1 flex items-center justify-center w-full h-[50px] border-2 border-dashed rounded-lg cursor-pointer">
-            <input
-              id="landlordPhoto"
-              type="file"
-              onChange={(e) => handleChange('landlordPhoto', e.target.files?.[0]?.name || '')}
-              className="hidden"
-            />
-            <Label htmlFor="landlordPhoto" className="text-center text-gray-600 cursor-pointer">
-              Upload Landlord(s) Photo
-            </Label>
+          <div>
+            <Label htmlFor={`brokerPhoto-${index}`} className="font-semibold text-[#010101]">Upload Broker Photo</Label>
+            <div className='p-5 shadow-custom rounded-md mt-2'>
+              <div className="mt-1 flex items-center justify-center w-full h-[50px] border-2 border-dashed rounded-lg cursor-pointer">
+                <input
+                  id={`brokerPhoto-${index}`}
+                  type="file"
+                  onChange={(e) => handleBrokerChange(index, 'brokerPhoto', e.target.files?.[0]?.name || '')}
+                  className="hidden"
+                />
+                <Label htmlFor={`brokerPhoto-${index}`} className="text-center text-gray-600 cursor-pointer">
+                  Upload Broker Photo
+                </Label>
+              </div>
+            </div>
           </div>
+
+          {brokers.length > 1 && (
+            <Button type="button" onClick={() => removeBroker(index)} className="mt-2 flex items-center gap-2" variant="destructive">
+              <Trash className="w-4 h-4" />
+            </Button>
+          )}
         </div>
+      ))}
+
+      <Button type="button" onClick={addBroker} className="mt-2 flex items-center gap-2">
+        <span>Add Another Broker</span>
+      </Button>
+
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold">Additional Parties</h3>
+        {additionalParties.map((party, index) => (
+          <div key={index} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor={`type-${index}`} className="font-semibold text-[#010101]">Type *</Label>
+                <Input
+                  id={`type-${index}`}
+                  type="text"
+                  placeholder="Type (Lender, Title, Attorney, etc.)"
+                  value={party.type}
+                  onChange={(e) => handleAdditionalPartyChange(index, 'type', e.target.value)}
+                  className="mt-1 block w-full"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor={`info-${index}`} className="font-semibold text-[#010101]">Information *</Label>
+                <Input
+                  id={`info-${index}`}
+                  type="text"
+                  placeholder="Name"
+                  value={party.info}
+                  onChange={(e) => handleAdditionalPartyChange(index, 'info', e.target.value)}
+                  className="mt-1 block w-full"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor={`instagramHandle-${index}`} className="font-semibold text-[#010101]">Instagram Handle *</Label>
+                <Input
+                  id={`instagramHandle-${index}`}
+                  type="text"
+                  placeholder="Ex. @solidinmiami"
+                  value={party.instagramHandle}
+                  onChange={(e) => handleAdditionalPartyChange(index, 'instagramHandle', e.target.value)}
+                  className="mt-1 block w-full"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor={`photo-${index}`} className="font-semibold text-[#010101]">Upload Photo</Label>
+              <div className='p-5 shadow-custom rounded-md mt-2'>
+                <div className="mt-1 flex items-center justify-center w-full h-[50px] border-2 border-dashed rounded-lg cursor-pointer">
+                  <input
+                    id={`photo-${index}`}
+                    type="file"
+                    onChange={(e) => handleAdditionalPartyChange(index, 'photo', e.target.files?.[0]?.name || '')}
+                    className="hidden"
+                  />
+                  <Label htmlFor={`photo-${index}`} className="text-center text-gray-600 cursor-pointer">
+                    Upload Photo
+                  </Label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center mt-2">
+              <input
+                id={`publish-${index}`}
+                type="checkbox"
+                className="mr-2"
+                checked={party.publish}
+                onChange={(e) => handleAdditionalPartyChange(index, 'publish', (e.target as HTMLInputElement).checked)}
+              />
+              <Label htmlFor={`publish-${index}`} className="font-semibold text-[#010101]">Publish this information</Label>
+            </div>
+
+            {additionalParties.length > 1 && (
+              <Button type="button" onClick={() => removeAdditionalParty(index)} className="mt-2 flex items-center gap-2" variant="destructive">
+                <Trash className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Button type="button" onClick={prevStep} variant="outline">Back</Button>
-        <Button type="submit">Continue</Button>
-      </div>
+      <Button type="button" onClick={addAdditionalParty} className="mt-2 flex items-center gap-2">
+        <span>Add Another Party</span>
+      </Button>
+
     </form>
   );
 };

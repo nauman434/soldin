@@ -10,18 +10,64 @@ interface DealInfoProps {
   prevStep: () => void;
   handleChange: (input: string, value: string) => void;
   formData: any;
+  updateTotalFee: (fee: number, title: string) => void;
 }
 
-const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, formData }) => {
+const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, formData, updateTotalFee }) => {
   const continueStep = (e: React.FormEvent) => {
     e.preventDefault();
     nextStep();
   };
 
+  const formatNumber = (value: string) => {
+    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const handleNumberChange = (input: string, value: string) => {
+    const rawValue = value.replace(/,/g, '');
+    if (!isNaN(Number(rawValue))) {
+      handleChange(input, formatNumber(rawValue));
+      if (input === 'salePrice') {
+        calculateFee(Number(rawValue));
+      }
+    }
+  };
+
+  const calculateFee = (salePrice: number) => {
+    let fee = 0;
+    let title = 'Sale Price Fee';
+    if (salePrice < 1000000) {
+      fee = 300;
+    } else if (salePrice >= 1000000 && salePrice < 2500000) {
+      fee = 220;
+    } else if (salePrice >= 2500000 && salePrice < 25000000) {
+      fee = 100;
+    }
+    updateTotalFee(fee, title);
+  };
+
+  const getFeeDescription = (salePrice: number) => {
+    if (salePrice < 1000000) {
+      return 'Below $1M - Fee: $300';
+    } else if (salePrice >= 1000000 && salePrice < 2500000) {
+      return 'Below $2.5M - Fee: $220';
+    } else if (salePrice >= 2500000 && salePrice < 25000000) {
+      return 'Below $25M - Fee: $100';
+    }
+    return '';
+  };
+
+  const calculatePSF = () => {
+    const salePrice = Number(formData.salePrice.replace(/,/g, ''));
+    const propertySqFt = Number(formData.propertySqFt.replace(/,/g, ''));
+    if (!isNaN(salePrice) && !isNaN(propertySqFt) && propertySqFt > 0) {
+      return (salePrice / propertySqFt).toFixed(2);
+    }
+    return '';
+  };
+
   return (
     <form onSubmit={continueStep} className="space-y-8">
-
-
       <div className="grid grid-cols-2 gap-2">
         <div>
           <Label htmlFor="assetType" className="font-semibold text-[#010101]">Asset Type *</Label>
@@ -30,11 +76,9 @@ const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, f
               <SelectValue placeholder="Select Asset Type" />
             </SelectTrigger>
             <SelectContent>
-              {/* Add asset types */}
               {assetTypes.map((asset) => (
                 <SelectItem key={asset.id} value={asset.value}>{asset.name}</SelectItem>
               ))}
-              {/* Add more options as needed */}
             </SelectContent>
           </Select>
         </div>
@@ -46,10 +90,8 @@ const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, f
               <SelectValue placeholder="Select Sale Type" />
             </SelectTrigger>
             <SelectContent>
-              {/* Add sale types */}
               <SelectItem value="loan">Loan</SelectItem>
               <SelectItem value="lease">Lease</SelectItem>
-              {/* Add more options as needed */}
             </SelectContent>
           </Select>
         </div>
@@ -85,9 +127,17 @@ const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, f
             type="text"
             placeholder="Ex. $10,000,000"
             value={formData.salePrice}
-            onChange={(e) => handleChange('salePrice', e.target.value)}
+            onChange={(e) => handleNumberChange('salePrice', e.target.value)}
             className="mt-1 block w-full"
           />
+          <div className="mt-1 text-sm text-gray-600 flex items-center">
+            {formData.salePrice && (
+              <>
+                <input type="radio" checked readOnly className="mr-2" />
+                <span>{getFeeDescription(Number(formData.salePrice.replace(/,/g, '')))}</span>
+              </>
+            )}
+          </div>
         </div>
 
         <div>
@@ -97,7 +147,7 @@ const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, f
             type="text"
             placeholder="Ex. $10,000,000"
             value={formData.askingPrice}
-            onChange={(e) => handleChange('askingPrice', e.target.value)}
+            onChange={(e) => handleNumberChange('askingPrice', e.target.value)}
             className="mt-1 block w-full"
           />
         </div>
@@ -109,25 +159,61 @@ const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, f
             type="text"
             placeholder="Ex. 16,000"
             value={formData.propertySqFt}
-            onChange={(e) => handleChange('propertySqFt', e.target.value)}
+            onChange={(e) => handleNumberChange('propertySqFt', e.target.value)}
             className="mt-1 block w-full"
           />
         </div>
 
         <div>
-          <Label htmlFor="units" className="font-semibold text-[#010101]">Units</Label>
+          <Label htmlFor="psf" className="font-semibold text-[#010101]">PSF (Price per Square Foot)</Label>
           <Input
-            id="units"
+            id="psf"
             type="text"
-            placeholder="Ex. 40"
-            value={formData.units}
-            onChange={(e) => handleChange('units', e.target.value)}
+            placeholder="Calculated PSF"
+            value={calculatePSF()}
+            readOnly
+            className="mt-1 block w-full"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="originalPrice" className="font-semibold text-[#010101]">Original Price</Label>
+          <Input
+            id="originalPrice"
+            type="text"
+            placeholder="Ex. $10,000,000"
+            value={formData.originalPrice}
+            onChange={(e) => handleNumberChange('originalPrice', e.target.value)}
+            className="mt-1 block w-full"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="lastAskingPrice" className="font-semibold text-[#010101]">Last Asking Price</Label>
+          <Input
+            id="lastAskingPrice"
+            type="text"
+            placeholder="Ex. $10,000,000"
+            value={formData.lastAskingPrice}
+            onChange={(e) => handleNumberChange('lastAskingPrice', e.target.value)}
+            className="mt-1 block w-full"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="soldPrice" className="font-semibold text-[#010101]">Sold Price (if it’s sold)</Label>
+          <Input
+            id="soldPrice"
+            type="text"
+            placeholder="Ex. $10,000,000"
+            value={formData.soldPrice}
+            onChange={(e) => handleNumberChange('soldPrice', e.target.value)}
             className="mt-1 block w-full"
           />
         </div>
       </div>
 
-      <div >
+      <div>
         <Label htmlFor="propertyPhoto" className="font-semibold text-[#010101]">Upload Property Photo</Label>
         <div className='p-5 shadow-custom rounded-md mt-2'>
           <div className="mt-1 flex items-center justify-center w-full h-[50px] border-2 border-dashed rounded-lg cursor-pointer">
@@ -142,11 +228,6 @@ const DealInfo: React.FC<DealInfoProps> = ({ nextStep, prevStep, handleChange, f
             </Label>
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <Button type="button" onClick={prevStep} variant={'outline'} >Back</Button>
-        <Button type="submit" >Continue</Button>
       </div>
     </form>
   );
